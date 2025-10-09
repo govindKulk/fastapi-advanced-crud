@@ -1,0 +1,60 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual environments
+.env
+.env.*
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Python tooling caches
+.pytest_cache/
+.mypy_cache/
+.pyre/
+.pytype/
+.ruff_cache/
+
+# Test / coverage reports
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# IDEs / editors
+.idea/
+.vscode/
+*.iml
+
+# Logs and runtime files
+*.log
+*.pid
+*.sock
+
+# Database files (optional)
+*.sqlite3
+*.db
+
+# Docker (local overrides)
+docker-compose.override.yml
+
+# Node (if front-end present)
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
