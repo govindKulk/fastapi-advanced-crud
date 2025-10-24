@@ -4,9 +4,9 @@ from typing import Optional
 from app.core.exceptions import ValidationError
 
 class UserBase(BaseModel):
-    username: str = Field(..., min_length=3, max_length=50)
-    email: EmailStr
-    full_name: Optional[str] = Field(None, max_length=100)
+    username: str = Field(..., min_length=3, max_length=50, description="Unique username")
+    email: EmailStr = Field(..., description="User email address")
+    full_name: Optional[str] = Field(None, max_length=100, description="Full name of the user")
 
     @field_validator("username")
     def validate_username(cls, v: str) -> str:
@@ -16,7 +16,6 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field(..., min_length=8, max_length=100)
-
     @field_validator("password")
     def validate_password(cls, v: str) -> str:
         if not any(c.isupper() for c in v):
@@ -36,5 +35,5 @@ class UserResponse(UserBase):
         from_attributes = True
 
 class UserLogin(BaseModel):
-    username: str
-    password: str
+    username: str = Field(..., description="Unique username")
+    password: str = Field(..., description="User password")
