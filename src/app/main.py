@@ -1,5 +1,5 @@
 from fastapi import FastAPI,  HTTPException, status
-from app.routers import tasks, auth
+from app.routers import tasks, auth, files
 from pydantic import BaseModel
 
 
@@ -11,7 +11,7 @@ task_app = FastAPI(
 
 task_app.include_router(tasks.router, prefix="/tasks", tags=["tasks"])
 task_app.include_router(auth.router, prefix="/auth", tags=["auth"])
-
+task_app.include_router(files.router, tags=["files"])
 
 class RootResponse(BaseModel):
     message: str
