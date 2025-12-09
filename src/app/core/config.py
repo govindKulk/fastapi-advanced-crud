@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "your-secret-key-change-in-production"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
 
+    REDIS_URL: str = "redis://localhost:6379"
 
     # this inner config class tells pydantic to read from a .env file
     # this pattern is common for pydantic settings management

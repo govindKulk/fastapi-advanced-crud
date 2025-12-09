@@ -21,7 +21,8 @@ dependencies = [
     "passlib[bcrypt] (>=1.7.4,<2.0.0)",
     "pydantic[email] (>=2.12.4,<3.0.0)",
     "bcrypt (==4.0.1)",
-    "aiofiles (>=25.1.0,<26.0.0)"
+    "aiofiles (>=25.1.0,<26.0.0)",
+    "redis (>=7.1.0,<8.0.0)"
 ]
 
 [tool.poetry]
