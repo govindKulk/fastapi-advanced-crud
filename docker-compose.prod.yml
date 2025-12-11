@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    # service will automatically restart unless stopped manually
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - REDIS_URL=${REDIS_URL}
+    depends_on:
+      - db
+      - redis
+    # labels are used to configure Traefik for automatic HTTPS
+  
+    labels:
+      # Enable Traefik for this service
+      - "traefik.enable=true"
+      # Define the entrypoints to be used
+      - "traefik.http.routers.fastapi.rule=Host(`fastapi-backend.govindkulkarni.me`)"
+      # Use the websecure entrypoint for HTTPS
+      - "traefik.http.routers.fastapi.tls=true"
+      # Use Let's Encrypt for TLS certificates
+      - "traefik.http.routers.fastapi.tls.certresolver=letsencrypt"
+
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+  traefik:
+    image: traefik:v2.9
+    restart: unless-stopped
+    command:
+      # traffic dashboard set to false
+      - "--api.insecure=false"
+      # enable docker as a provider
+      - "--providers.docker=true"
+      # define entrypoints for web (http) and websecure (https)
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Let's Encrypt configuration
+      # email for Let's Encrypt registration
+      - "--certificatesresolvers.letsencrypt.acme.email=kulkarnigovind2003@gmail.com"
+      # acme.json file to store certificates across restarts
+      - "--certificatesresolvers.letsencrypt.acme.storage=/acme.json"
+      # use http challenge to verify domain ownership
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # mount docker socket to allow Traefik to listen to docker events, read-only
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # mount acme.json file to store Let's Encrypt certificates
+      - ./acme.json:/acme.json
+
+volumes:
+  postgres_data:
+  redis_data:
