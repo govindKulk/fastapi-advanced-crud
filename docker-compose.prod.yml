@@ -12,8 +12,10 @@ services:
     depends_on:
       - db
       - redis
+    volumes:
+      - ./uploads:/app/uploads
+    
     # labels are used to configure Traefik for automatic HTTPS
-  
     labels:
       # Enable Traefik for this service
       - "traefik.enable=true"

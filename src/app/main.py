@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from typing import Any, List, cast
 import logging
 import sys
+from fastapi.middleware.cors import CORSMiddleware
 
 # Configure logging at application startup
 logging.basicConfig(
@@ -66,6 +67,15 @@ async def fun_middleware(
     response = await call_next(request)
     return response
 
+# Cors Middleware
+# CORS middleware
+task_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @task_app.get("/messages", tags=["messages"])
 async def get_messages() -> List[str]:
