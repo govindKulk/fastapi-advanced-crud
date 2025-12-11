@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     # service will automatically restart unless stopped manually
     restart: unless-stopped
     environment:
@@ -10,10 +12,14 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - REDIS_URL=${REDIS_URL}
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./uploads:/app/uploads
+    networks:
+      - app-network
     
     # labels are used to configure Traefik for automatic HTTPS
     labels:
@@ -35,12 +41,26 @@ services:
       - POSTGRES_DB=${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
 
   redis:
     image: redis:7-alpine
     restart: unless-stopped
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - app-network
 
   traefik:
     image: traefik:v2.9
@@ -68,7 +88,13 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # mount acme.json file to store Let's Encrypt certificates
       - ./acme.json:/acme.json
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
   redis_data:
+
+networks:
+  app-network:
+    driver: bridge

@@ -10,11 +10,15 @@ services:
       - REDIS_URL=redis://redis:6379
       - SECRET_KEY=your_secret_key_here
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     volumes:
       - ./uploads:/app/uploads
       - ./src:/app/src
+    networks:
+      - app-network
 
   db:
     image: postgres:15
@@ -26,6 +30,13 @@ services:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
 
   redis:
     image: redis:7-alpine
@@ -33,7 +44,18 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - app-network
 
 volumes:
   pg_data:
   redis_data:
+
+networks:
+  app-network:
+    driver: bridge
