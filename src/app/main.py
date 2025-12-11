@@ -1,9 +1,10 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI,  HTTPException, status
-from app.routers import tasks, auth, files
+from app.routers import tasks, auth, files, monitoring
 from app.core.cache import cache_manager
+from app.core.config import settings
 from pydantic import BaseModel
-from typing import List, cast
+from typing import Any, List, cast
 import logging
 import sys
 
@@ -40,33 +41,37 @@ async def lifespan(app: FastAPI):
 
 
 task_app = FastAPI(
-    title="Task Management API",
-    description="A simple Task Management API built with FastAPI",
+    title=settings.PROJECT_NAME,
+    description="A comprehensive task management system built with FastAPI",
     version="1.0.0",
-    lifespan=lifespan,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    lifespan=lifespan
 )
 
 task_app.include_router(tasks.router, prefix="/tasks", tags=["tasks"])
 task_app.include_router(auth.router, prefix="/auth", tags=["auth"])
 task_app.include_router(files.router, tags=["files"])
+task_app.include_router(monitoring.router, prefix="/monitoring", tags=["monitoring"])
+
+# custom middleware 
+@task_app.middleware("http")
+async def fun_middleware(
+    request: Any,
+    call_next: Any
+) -> Any:
+    emojis = ["🚀", "🔥", "✨", "🌟", "💥", "🎉", "😄", "🤖", "👾", "🛠️"]
+    import random
+    idx = random.randint(0, len(emojis) - 1)
+    logger.info( f" {" ".join(list(emojis[idx] * 3))} ")
+    response = await call_next(request)
+    return response
 
 
-@task_app.get("/health")
-async def health_check() -> dict[str, str | bool]:
-    """Health check endpoint to verify Redis connection"""
-    redis_connected = cache_manager.redis_client is not None
-    
-    return {
-        "status": "healthy" if redis_connected else "degraded",
-        "redis_connected": redis_connected,
-        "cache_enabled": redis_connected
-    }
-
-@task_app.get("/messages")
+@task_app.get("/messages", tags=["messages"])
 async def get_messages() -> List[str]:
     return task_app.state.messages
 
-@task_app.post("/messages")
+@task_app.post("/messages", tags=["messages"])
 async def add_message(message: str) -> dict[str, str]:
     task_app.state.messages.append(message)
     return {"message": "Message added successfully"}
@@ -89,6 +94,9 @@ def read_root() -> RootResponse:
         return RootResponse(message="Welcome to the Task Management API!")
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+
 
 
 # if __name__ == "__main__":

@@ -18,7 +18,7 @@ services:
       # Enable Traefik for this service
       - "traefik.enable=true"
       # Define the entrypoints to be used
-      - "traefik.http.routers.fastapi.rule=Host(`fastapi-backend.govindkulkarni.me`)"
+      - "traefik.http.routers.fastapi.rule=Host(`fastapi-backend.domain.com`)"
       # Use the websecure entrypoint for HTTPS
       - "traefik.http.routers.fastapi.tls=true"
       # Use Let's Encrypt for TLS certificates
@@ -53,7 +53,7 @@ services:
       - "--entrypoints.websecure.address=:443"
       # Let's Encrypt configuration
       # email for Let's Encrypt registration
-      - "--certificatesresolvers.letsencrypt.acme.email=kulkarnigovind2003@gmail.com"
+      - "--certificatesresolvers.letsencrypt.acme.email=addyouremail@domain.com"
       # acme.json file to store certificates across restarts
       - "--certificatesresolvers.letsencrypt.acme.storage=/acme.json"
       # use http challenge to verify domain ownership
